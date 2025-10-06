@@ -9,3 +9,5 @@ emoji_cache.json
 .idea/
 .vscode/
 __MACOSX/
+.env
+ffmpeg.exe
