@@ -1,7 +1,7 @@
 # 🦆 HonkBot
 
-**HonkBot** is a fun and chaotic Discord bot that plays sound effects when users send emoji messages in voice channels.  
-It automatically discovers sound effects for new emojis using an AI model and the Freesound.org API.
+**HonkBot** is your unhinged little friend that can *actually* make your emojis scream, laugh, bark, and explode right in your voice calls.  
+It finds, downloads, and plays sound effects for every emoji you throw its way using an AI model and Freesound.org. It’s part chaos, part genius, 100% loud.
 
 ---
 
@@ -29,7 +29,11 @@ cd honkbot
 pip install -r requirements.txt
 ```
 
-### 3. Add your environment variables  
+### 3. Make sure FFmpeg is installed
+Grab **ffmpeg.exe** and drop it next to `bot.py`.   
+No FFmpeg, no sound. You can get it from: [https://ffmpeg.org/download.html](https://ffmpeg.org/download.html)
+
+### 4. Add your environment variables  
 Create a `.env` file in the project root:
 ```env
 DISCORD_BOT_TOKEN=your_discord_bot_token_here
@@ -37,7 +41,7 @@ OPENROUTER_API_KEY=your_openrouter_key_here
 FREESOUND_API_KEY=your_freesound_api_key_here
 ```
 
-### 4. Run the bot  
+### 5. Run the bot  
 ```bash
 python bot.py
 ```
@@ -61,13 +65,13 @@ python bot.py
 
 ## 🤖 How it works
 
-1. When a user sends a message with emojis while in a voice channel:
-   - HonkBot detects all emojis (including custom and Zero Width Joiner combos like 👨‍👩‍👧‍👦).
-   - For unknown emojis, it asks the **LLM** what that emoji should sound like.
-   - The bot then searches **Freesound.org** for a matching sound effect.
-   - The sound is downloaded, cached, and played back in the Discord VC.
-
-2. The next time that emoji appears, the bot reuses the cached sound instantly.
+1. When someone drops an emoji in chat while in a call:
+   - HonkBot spots it like a hawk (even uncommon ones like 👨‍👩‍👧‍👦).
+   - It pings an LLM like: “yo, what’s this supposed to sound like?”
+   - LLM goes ✨beep boop✨ (or somethin like that, I don't know how they work /hj) and responds with something like “dog bark” or “sad trombone.”
+   - The bot hunts down the sound on **Freesound.org**, downloads it, and plays it through Discord.
+   - Boom. Chaos.
+2. Next time? It just reuses the cached file — no AI delay, just awful noise.
 
 ---
 
@@ -79,6 +83,7 @@ python bot.py
 ├── sound_discovery.py    # LLM + Freesound AI sound discovery
 ├── sounds/               # Downloaded and cached MP3 files
 ├── emoji_cache.json      # Cached emoji → sound mapping
+├── ffmpeg.exe            # You need to download this 
 └── .env                  # API and bot tokens
 ```
 
@@ -94,13 +99,15 @@ python bot.py
 
 ## ⚠️ Admin Warnings
 
-- `/adminclear` will *permanently delete all saved sounds* and reset the cache.
-- Yes, it’s intentionally locked behind `/adminclear please`. Yes, this is terrible practice & has no real user access control. I know.
-- Don’t expose your `.env` file — it contains your bot and API keys.
+- `/adminclear` will *nuke every single sound* and wipe your cache clean. RIP honks.
+- Yes, it literally asks for “please.” That’s your *one-layer security system*.
+  - Yes, there is literally no other protection for this. If you want to use this in a real server, feel free to fix this.
+- Don’t ever leak `.env` — that’s your golden ticket (bot + API keys).
 
 ---
 
 ## 🦆 License
 
 Created by **Ryan Polasky**, 2025  
-All Rights Reserved.
+All Rights Reserved.  
+*(and probably semi-regretted after hearing 👀💀💥 fifty times in one call)*

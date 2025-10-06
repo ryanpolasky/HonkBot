@@ -1,0 +1,11 @@
+# ignore environments and cached stuff
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.log
+sounds/
+emoji_cache.json
+.idea/
+.vscode/
+__MACOSX/
