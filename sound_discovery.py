@@ -26,41 +26,39 @@ def query_llm_for_sound(emoji: str, emoji_name: str = None) -> dict:
         print("Warning: OPENROUTER_API_KEY not set")
         return None
 
-    prompt = f"""You are a funny but skilled Foley artist picking sound effects for emojis in a Discord bot.
+    prompt = f"""You are an expert Foley sound designer that picks perfect sound effects for emojis.
 
 Emoji: {emoji}
 {f"Unicode name: {emoji_name}" if emoji_name else ""}
 
-Your job: come up with a *real, funny, and memorable* sound that captures this emoji’s vibe,
-but don’t get fancy — your result should be something a sound library would actually have.
+Task:
+Return the most *searchable and realistic* Freesound search query for this emoji.
 
-Tone:
-- Keep it light-hearted and playful, like you're adding cartoon sounds to a meme.
-- It should be funny or cute when possible, not abstract or cinematic.
-- Always aim for real-world sound search terms, not feelings or ideas.
-
-Rules:
-- 2–4 words max
-- Describe what you'd literally search on Freesound (e.g., **"cartoon bonk"**, **"sad trombone"**, **"dog bark"**)
-- Never make up nonsense or complex descriptions
-- No adjectives like “funny” or “epic” — let the sound itself be funny!
+Guidelines:
+- Use short, literal, emotionally grounded sound terms (2–4 words max)
+- Must be a sound an SFX library would have—avoid conceptual descriptions
+- Think of real-world sound sources the emoji evokes
+- Prefer familiar, instantly recognizable audio textures
+- Avoid adjectives like “funny,” “cool,” or “interesting”
+- Prefer nouns and verbs representing sound-emitting actions
 
 Examples:
-😂 → loud laugh
 🐶 → dog bark
-💀 → comedic skull rattle
-🔥 → fire crackle
-🤔 → hmm thinking
-🚗 → car vroom
-🤡 → clown honk
-🌈 → sparkle twinkle
-💥 → explosion pop
+😂 → laughter
+🔥 → fire crackling
+🔔 → bell ringing
+👏 → clapping
+💬 → notification pop
+🧠 → electric spark
+🤔 → hmm thinking sound
+💀 → skull rattle
+🍞 → bread crunch
 
-Respond ONLY with valid JSON like this:
+Return only valid JSON:
 
 {{
-  "sound_query": "cartoon boing",
-  "description": "funny bounce sound for playful emojis"
+  "sound_query": "short search phrase",
+  "description": "brief explanation of why this sound fits"
 }}
 
 No markdown, no commentary, just JSON."""
