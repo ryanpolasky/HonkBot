@@ -2,6 +2,7 @@
 # HonkBot | All Rights Reserved
 
 import os
+import re
 import requests
 import json
 from pathlib import Path
@@ -41,6 +42,7 @@ Guidelines:
 - Prefer familiar, instantly recognizable audio textures
 - Avoid adjectives like “funny,” “cool,” or “interesting”
 - Prefer nouns and verbs representing sound-emitting actions
+- Do NOT use a record scratch sound effect unless it's perfectly matching
 
 Examples:
 🐶 → dog bark
@@ -255,6 +257,10 @@ Return ONLY a JSON object: {{"sound_query": "simpler phrase"}}"""
 
     if emoji_name:
         safe_name = emoji_name.lower().replace(' ', '_').replace('-', '_')
+        safe_name = re.sub(r'[^a-zA-Z0-9_]+', '', safe_name)
+        # trim out user-provided text that got appended (if any)
+        if "|" in safe_name:
+            safe_name = safe_name.split("|")[0].strip("_")
     else:
         codepoint = '-'.join(f'{ord(c):04x}' for c in emoji)
         safe_name = f"emoji_{codepoint}"

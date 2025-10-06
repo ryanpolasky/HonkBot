@@ -550,8 +550,8 @@ async def discover(interaction: discord.Interaction, emoji: str):
 
 
 @bot.tree.command(name="redo", description="Redo LLM sound discovery for an emoji if the current sound is bad")
-async def redo(interaction: discord.Interaction, emoji: str):
-    """redo discovery on a bad pick"""
+async def redo(interaction: discord.Interaction, emoji: str, suggestion: str = None):
+    """redo discovery on a bad pick (user can suggest what it should be)"""
     await interaction.response.defer(ephemeral=True)
 
     emojis = extract_emojis(emoji)
@@ -566,30 +566,41 @@ async def redo(interaction: discord.Interaction, emoji: str):
         if old_path and os.path.exists(old_path):
             try:
                 os.remove(old_path)
-                await interaction.followup.send(f"🗑️ Removed old sound file for {target_emoji}", ephemeral=True)
+                await interaction.followup.send(f"🗑️ removed old sound for {target_emoji}", ephemeral=True)
             except Exception as e:
-                await interaction.followup.send(f"⚠️ Could not delete old file ({e})", ephemeral=True)
+                await interaction.followup.send(f"⚠️ couldn't delete old file ({e})", ephemeral=True)
         emoji_cache.pop(target_emoji, None)
         save_emoji_cache()
 
-    # tell LLM that previous choice was bad
-    print(f"🔁 Redoing sound discovery for {target_emoji} due to poor fit")
+    # tell LLM that previous choice was bad, include user idea if given
+    if suggestion:
+        print(f"🔁 Redoing sound for {target_emoji} — user suggests: '{suggestion}'")
+    else:
+        print(f"🔁 Redoing sound discovery for {target_emoji} due to poor fit")
 
     emoji_name = None
     if target_emoji.startswith('<'):
         emoji_name = extract_custom_emoji_name(target_emoji)
 
+    # pass suggestion along to discovery
     new_path = await find_and_download_sound_for_emoji(
         emoji=target_emoji,
-        emoji_name=emoji_name
+        emoji_name=emoji_name if not suggestion else f"{emoji_name or ''} | user wants: {suggestion}"
     )
 
     if new_path and os.path.exists(new_path):
         emoji_cache[target_emoji] = new_path
         save_emoji_cache()
-        await interaction.followup.send(f"✅ Redid and downloaded new sound for {target_emoji}\nPath: `{new_path}`", ephemeral=True)
+        msg = f"✅ Redid & downloaded new sound for {target_emoji}"
+        if suggestion:
+            msg += f"\nUsed user idea: '{suggestion}'"
+        msg += f"\nPath: `{new_path}`"
+        await interaction.followup.send(msg, ephemeral=True)
     else:
-        await interaction.followup.send(f"❌ Redo failed for {target_emoji}", ephemeral=True)
+        fail_msg = f"❌ Redo failed for {target_emoji}"
+        if suggestion:
+            fail_msg += f" (even with suggestion '{suggestion}')"
+        await interaction.followup.send(fail_msg, ephemeral=True)
 
 
 @bot.tree.command(name="adminclear", description="🧨 DANGEROUS: Deletes all sounds and clears emoji cache")
