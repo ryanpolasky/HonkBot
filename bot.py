@@ -629,6 +629,87 @@ async def adminclear(interaction: discord.Interaction, confirm: str):
     await interaction.followup.send(f"💣 Nuked {deleted} sound(s) and cleared emoji cache. It's all gone now.", ephemeral=True)
 
 
+@bot.tree.command(name="set", description="Manually assign a YouTube video sound to an emoji")
+async def set_emoji_sound(interaction: discord.Interaction, emoji: str, youtube_url: str):
+    """associate an emoji with an audio clip downloaded from YouTube"""
+    await interaction.response.defer(ephemeral=True)
+
+    emojis = extract_emojis(emoji)
+    if not emojis:
+        await interaction.followup.send("❌ No valid emoji found!", ephemeral=True)
+        return
+
+    target_emoji = emojis[0]
+    safe_name = re.sub(r'[^a-zA-Z0-9_]+', '', target_emoji.encode("unicode_escape").decode("utf-8"))
+    output_path = Path("sounds") / f"{safe_name}.mp3"
+
+    try:
+        import yt_dlp
+
+        ydl_opts = {
+            "format": "bestaudio/best",
+            "outtmpl": str(output_path),
+            "postprocessors": [
+                {
+                    "key": "FFmpegExtractAudio",
+                    "preferredcodec": "mp3",
+                    "preferredquality": "192",
+                }
+            ],
+            "quiet": True,
+            "no_warnings": True,
+        }
+
+        print(f"🎥 Attempting to download YouTube audio for emoji {target_emoji}...")
+        print(f"   URL: {youtube_url}")
+        print(f"   Output: {output_path}")
+
+        ydl_opts["outtmpl"] = str(output_path.with_suffix(""))  # remove extension before yt_dlp adds .mp3
+
+        # make sure we don't collide with a parallel /set operation
+        lock_path = output_path.with_suffix(".lock")
+        if lock_path.exists():
+            print(f"⚠️ Another /set task is already writing {output_path}, waiting for it to finish...")
+            retries = 0
+            while lock_path.exists() and retries < 30:
+                await asyncio.sleep(1)
+                retries += 1
+
+        try:
+            lock_path.touch()
+            print(f"🎥 Attempting to download YouTube audio for emoji {target_emoji}...")
+            print(f"   URL: {youtube_url}")
+            print(f"   Output: {output_path}")
+
+            ydl_opts["outtmpl"] = str(output_path.with_suffix(""))  # ensure yt_dlp adds .mp3 itself
+
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                result = ydl.download([youtube_url])
+                print(f"   yt_dlp result code: {result}")
+
+            if output_path.exists():
+                print(f"✅ YouTube download complete: {output_path}")
+                emoji_cache[target_emoji] = str(output_path)
+                save_emoji_cache()
+                await interaction.followup.send(
+                    f"✅ Set new sound for {target_emoji} from YouTube!\nPath: `{output_path}`",
+                    ephemeral=True
+                )
+            else:
+                print(f"❌ YouTube download failed, file not found at {output_path}")
+                await interaction.followup.send("❌ Failed to save YouTube audio.", ephemeral=True)
+        finally:
+            if lock_path.exists():
+                try:
+                    lock_path.unlink()
+                except Exception as e:
+                    print(f"⚠️ Could not remove lock file {lock_path}: {e}")
+
+    except Exception as e:
+        print(f"❌ Error during YouTube download for {target_emoji}: {e}")
+        await interaction.followup.send(f"❌ Error downloading audio: {e}", ephemeral=True)
+
+
 if __name__ == "__main__":
     Path("sounds").mkdir(exist_ok=True)
 
